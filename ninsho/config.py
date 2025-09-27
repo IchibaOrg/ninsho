@@ -1,6 +1,25 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 import os
+import boto3
+
+env = os.getenv("ENV", "local")  # default local
+
+def load_ssm_parameters(prefix="/ninsho/"):
+    """Fetch all parameters under a given prefix and inject into os.environ."""
+    ssm = boto3.client("ssm", region_name="eu-central-1")
+    paginator = ssm.get_paginator("get_parameters_by_path")
+
+    for page in paginator.paginate(Path=prefix, WithDecryption=True):
+        for param in page["Parameters"]:
+            key = param["Name"].replace(prefix, "")
+            os.environ[key] = param["Value"]
+
+
+
+# Only fetch from SSM if ENV=production
+if env == "production":
+    load_ssm_parameters("/ninsho/")
 
 
 class AppConfig(BaseSettings):
@@ -26,5 +45,9 @@ parent_dir = os.path.dirname(current_dir)
 
 env_file_path = os.path.join(parent_dir, ".env")
 
-config: AppConfig = AppConfig(_env_file=env_file_path)  # type: ignore
+
+if env == "production":
+    config = AppConfig()  # only reads from real env vars
+else:
+    config = AppConfig(_env_file=".env")  # type: ignore
 
