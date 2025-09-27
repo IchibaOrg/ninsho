@@ -2,18 +2,27 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 import os
 import boto3
+import logging
+
+logger = logging.getLogger(__name__)
 
 env = os.getenv("ENV", "local")  # default local
 
 def load_ssm_parameters(prefix="/ninsho/"):
     """Fetch all parameters under a given prefix and inject into os.environ."""
     ssm = boto3.client("ssm", region_name="eu-central-1")
+    logger.info(f"SSM client inited.")
     paginator = ssm.get_paginator("get_parameters_by_path")
 
+    logger.info("pagination!")
     for page in paginator.paginate(Path=prefix, WithDecryption=True):
         for param in page["Parameters"]:
+            logger.info(param["Name"])
             key = param["Name"].replace(prefix, "")
             os.environ[key] = param["Value"]
+
+
+    logger.info(os.environ.get('DATABASE_URL'))
 
 
 
