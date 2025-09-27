@@ -4,8 +4,11 @@ import os
 import boto3
 import logging
 
+logging.basicConfig(
+    level=logging.INFO,  # <- set INFO level
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+)
 logger = logging.getLogger(__name__)
-
 env = os.getenv("ENV", "local")  # default local
 
 def load_ssm_parameters(prefix="/ninsho/"):
@@ -24,6 +27,8 @@ def load_ssm_parameters(prefix="/ninsho/"):
 
     logger.info(os.environ.get('DATABASE_URL'))
 
+
+logger.info("testing !!!")
 
 
 # Only fetch from SSM if ENV=production
