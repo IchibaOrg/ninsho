@@ -31,5 +31,7 @@ COPY alembic.ini gunicorn.conf.py ./
 COPY migrations ./migrations
 COPY ninsho ./ninsho
 
-# process manager as gunicorn
-CMD ["gunicorn", "ninsho.app:app"]
+
+# migrations are here for now!
+CMD ["sh", "-c", "alembic upgrade head && gunicorn ninsho.app:app --bind 0.0.0.0:8000"]
+
