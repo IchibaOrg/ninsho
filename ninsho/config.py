@@ -13,7 +13,7 @@ env = os.getenv("ENV", "local")  # default local
 
 def load_ssm_parameters(prefix="/ninsho/"):
     """Fetch all parameters under a given prefix and inject into os.environ."""
-    ssm = boto3.client("ssm", region_name="eu-central-1")
+    ssm = boto3.client("ssm", region_name="eu-north-1")
     logger.info(f"SSM client inited.")
     paginator = ssm.get_paginator("get_parameters_by_path")
 
