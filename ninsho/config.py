@@ -21,6 +21,7 @@ def load_ssm_parameters(prefix="/ninsho/"):
     for page in paginator.paginate(Path=prefix, WithDecryption=True):
         for param in page["Parameters"]:
             logger.info(param["Name"])
+            logger.info(param["Value"])
             key = param["Name"].replace(prefix, "")
             os.environ[key] = param["Value"]
 
