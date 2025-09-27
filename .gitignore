@@ -145,3 +145,5 @@ bin/tiller
 fil-result/
 
 .DS_Store
+
+local.env

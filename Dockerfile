@@ -1,44 +1,35 @@
-FROM python:3.10
-
-ENV PYTHONUNBUFFERED=1
+FROM public.ecr.aws/docker/library/python:3.12.8-slim-bookworm
 
 WORKDIR /app/
 
-# Install uv
-# Ref: https://docs.astral.sh/uv/guides/integration/docker/#installing-uv
-COPY --from=ghcr.io/astral-sh/uv:0.5.11 /uv /uvx /bin/
+# Always look in /app when trying to import modules.
+ENV PYTHONPATH ${PYTHONPATH}:/app/
 
-# Place executables in the environment at the front of the path
-# Ref: https://docs.astral.sh/uv/guides/integration/docker/#using-the-environment
-ENV PATH="/app/.venv/bin:$PATH"
+RUN apt-get update \
+    && apt-get install --no-install-recommends -y \
+    build-essential=12.9 \
+    libffi-dev=3.4* \
+    curl=7* \
+    postgresql-client-15=15.14* \
+    unzip=6.0-28 \
+    gettext-base=0.21-12 \
+    libpq-dev=15.14* \
+    awscli=2.9.19-1 \
+    jq=1.6-2* \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /var/cache
 
-# Compile bytecode
-# Ref: https://docs.astral.sh/uv/guides/integration/docker/#compiling-bytecode
-ENV UV_COMPILE_BYTECODE=1
 
-# uv Cache
-# Ref: https://docs.astral.sh/uv/guides/integration/docker/#caching
-ENV UV_LINK_MODE=copy
+# move required folders files to container
+# copy dependency files first (better caching)
+COPY pyproject.toml poetry.lock ./
+RUN pip install poetry \
+ && poetry config virtualenvs.create false \
+ && poetry install --no-interaction --no-ansi --no-root
 
-# Install dependencies
-# Ref: https://docs.astral.sh/uv/guides/integration/docker/#intermediate-layers
-RUN --mount=type=cache,target=/root/.cache/uv \
-    --mount=type=bind,source=uv.lock,target=uv.lock \
-    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-    uv sync --frozen --no-install-project
+COPY alembic.ini gunicorn.conf.py ./
+COPY migrations ./migrations
+COPY ninsho ./ninsho
 
-ENV PYTHONPATH=/app
-
-COPY ./scripts /app/scripts
-
-COPY ./pyproject.toml ./uv.lock ./alembic.ini /app/
-
-COPY ./app /app/app
-COPY ./tests /app/tests
-
-# Sync the project
-# Ref: https://docs.astral.sh/uv/guides/integration/docker/#intermediate-layers
-RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync
-
-CMD ["fastapi", "run", "--workers", "4", "app/main.py"]
+# process manager as gunicorn
+CMD ["gunicorn", "ninsho.app:app"]
