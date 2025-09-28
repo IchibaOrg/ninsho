@@ -1,0 +1,38 @@
+name: Deploy FastAPI App
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # (Optional) Run tests
+      - name: Run tests
+        run: |
+          echo "No tests yet"  # replace with pytest
+
+      # Build docker image locally (optional sanity check)
+      - name: Build docker image
+        run: docker build -t ninsho-api .
+
+      # Deploy to EC2
+      - name: Deploy on EC2
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_KEY }}
+          script: |
+            cd ~/ninsho
+            git pull origin main
+            docker build -t ninsho-api .
+            docker stop ninsho-api-container1 || true
+            docker rm ninsho-api-container1 || true
+            docker run -d --restart unless-stopped --name ninsho-api-container1 -p 8000:8000 -e ENV=production ninsho-api
