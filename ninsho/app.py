@@ -38,5 +38,5 @@ app = create_app()
 
 @app.get("/health")
 def health() -> dict[str, str]:
-    logger.debug("health called!")
+    logger.info("Healt called updated version!")
     return {"status": "ok"}
