@@ -33,5 +33,5 @@ COPY ninsho ./ninsho
 
 
 # migrations are here for now!
-CMD ["sh", "-c", "alembic upgrade head && gunicorn ninsho.app:app --bind 0.0.0.0:8000"]
+CMD ["sh", "-c", "alembic upgrade head && gunicorn ninsho.app:app"]
 

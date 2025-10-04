@@ -50,9 +50,7 @@ class AppConfig(BaseSettings):
     secret_key: str = "super-secret"
 
     # db
-    database_url: str = "postgresql+psycopg2://user:password@localhost:5432/mydb"
-
-
+    database_url: str = "postgresql+asyncpg://ninsho_user:ninsho_password@localhost:5432/ninsho_db"
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 

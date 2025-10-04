@@ -26,9 +26,6 @@ services:
       - "8000:8000"
     env_file:
       - local.env
-    command: >
-      sh -c "alembic upgrade head &&
-             gunicorn -c gunicorn.conf.py ninsho.app:app"
 
 volumes:
   db_data:
