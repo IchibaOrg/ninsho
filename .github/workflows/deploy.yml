@@ -35,4 +35,4 @@ jobs:
             docker build -t ninsho-api .
             docker stop ninsho-api-container1 || true
             docker rm ninsho-api-container1 || true
-            docker run -d --restart unless-stopped --name ninsho-api-container1 -p 8000:8000 -e ENV=production ninsho-api
+            docker run -d --restart unless-stopped --name ninsho-api-container1 -p 7200:7200 -e ENV=production ninsho-api
