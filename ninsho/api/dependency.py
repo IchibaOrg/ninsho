@@ -6,7 +6,10 @@ from ninsho.api.utils import decode_access_token
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 
 def get_current_user(token: str = Depends(oauth2_scheme)):
-    payload = decode_access_token(token)
-    if not payload:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
-    return payload["sub"]
+    try:
+        token_data = decode_access_token(token)
+        if not token_data or not token_data.username:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+        return token_data.username
+    except HTTPException:
+            raise
